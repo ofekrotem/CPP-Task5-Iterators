@@ -52,8 +52,9 @@ public:
     AscendingIterator end() const;
 
 private:
-    int current; // changed to const_iterator as we are not modifying the elements
+    int current;
     MagicalContainer container;
+    void validateIncrement();
 };
 
 class MagicalContainer::PrimeIterator {
@@ -79,6 +80,7 @@ public:
 private:
     int  current;
     bool isPrime(int n) const;
+    void validateIncrement();
     MagicalContainer container;
 };
 
@@ -106,6 +108,7 @@ private:
     int start;
     int finish;
     MagicalContainer container;
+    void validateIncrement();
 };
 
 }

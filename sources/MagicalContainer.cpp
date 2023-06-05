@@ -15,8 +15,15 @@ void MagicalContainer::addElement(int element) {
 
 
 void MagicalContainer::removeElement(int element) {
+    auto it = std::find(elements.begin(), elements.end(), element);
+
+    if (it == elements.end()) {
+        throw std::runtime_error("Element not found");
+    }
+
     elements.erase(std::remove(elements.begin(), elements.end(), element), elements.end());
 }
+
 
 int MagicalContainer::size() const {
     return elements.size();
@@ -56,8 +63,10 @@ MagicalContainer::AscendingIterator::AscendingIterator(const AscendingIterator& 
 MagicalContainer::AscendingIterator::~AscendingIterator() {}
 
 MagicalContainer::AscendingIterator& MagicalContainer::AscendingIterator::operator=(const AscendingIterator& other) {
-    current = other.current;
-    container = other.container;
+    if (&this->container != &other.container) {
+        throw std::runtime_error("Iterators are pointing at different containers");
+    }
+    this->current = other.current;
     return *this;
 }
 
@@ -81,7 +90,14 @@ int MagicalContainer::AscendingIterator::operator*() const {
     return container.elements[(vector<int>::size_type)current];
 }
 
+void MagicalContainer::AscendingIterator::validateIncrement() {
+    if (current >= container.size()) {
+        throw std::runtime_error("Iterator has exceeded the bounds.");
+    }
+}
+
 MagicalContainer::AscendingIterator& MagicalContainer::AscendingIterator::operator++() {
+    validateIncrement();
     ++current;
     return *this;
 }
@@ -97,9 +113,9 @@ MagicalContainer::AscendingIterator MagicalContainer::AscendingIterator::end() c
 MagicalContainer::PrimeIterator::PrimeIterator(const MagicalContainer& container, int current) 
 : current(current), container(container) {
     while(this->current < this->container.size()){
-        if(isPrime(container.elements[(vector<int>::size_type)current]))
+        if(isPrime(container.elements[(vector<int>::size_type)this->current]))
             break;
-        current++;
+        this->current++;
     }
 }
 
@@ -109,10 +125,13 @@ MagicalContainer::PrimeIterator::PrimeIterator(const PrimeIterator& other)
 MagicalContainer::PrimeIterator::~PrimeIterator() {}
 
 MagicalContainer::PrimeIterator& MagicalContainer::PrimeIterator::operator=(const PrimeIterator& other) {
-    container = other.container;
-    current = other.current;
+    if (&this->container != &other.container) {
+        throw std::runtime_error("Iterators are pointing at different containers");
+    }
+    this->current = other.current;
     return *this;
 }
+
 
 bool MagicalContainer::PrimeIterator::operator==(const PrimeIterator& other) const {
     return current == other.current;
@@ -134,14 +153,23 @@ int MagicalContainer::PrimeIterator::operator*() const {
     return container.elements[(vector<int>::size_type)current];
 }
 
+void MagicalContainer::PrimeIterator::validateIncrement() {
+    if (current >= container.size()) {
+        throw std::runtime_error("Iterator has exceeded the bounds.");
+    }
+}
+
+
 MagicalContainer::PrimeIterator& MagicalContainer::PrimeIterator::operator++() {
-    do{
+    validateIncrement();
+    current++;
+    while (current < container.size() && !isPrime(container.elements[(std::vector<int>::size_type)current])) {
         current++;
-        if(isPrime(container.elements[(vector<int>::size_type)current]))
-            break;
-    } while(this->current < this->container.size());
+    }
     return *this;
 }
+
+
 
 bool MagicalContainer::PrimeIterator::isPrime(int n) const {
     if (n <= 1) {
@@ -172,7 +200,9 @@ MagicalContainer::SideCrossIterator::SideCrossIterator(const SideCrossIterator& 
 MagicalContainer::SideCrossIterator::~SideCrossIterator() {}
 
 MagicalContainer::SideCrossIterator& MagicalContainer::SideCrossIterator::operator=(const SideCrossIterator& other) {
-    container = other.container;
+    if (&this->container != &other.container) {
+        throw std::runtime_error("Iterators are pointing at different containers");
+    }
     start = other.start;
     finish = other.finish;
     return *this;
@@ -201,7 +231,15 @@ int MagicalContainer::SideCrossIterator::operator*() const {
 
 }
 
+void MagicalContainer::SideCrossIterator::validateIncrement() {
+    if (start+finish >= container.size()) {
+        throw std::runtime_error("Iterator has exceeded the bounds.");
+    }
+}
+
+
 MagicalContainer::SideCrossIterator& MagicalContainer::SideCrossIterator::operator++() {
+    validateIncrement();
     if (start == finish) {
         ++finish;
     } else {
